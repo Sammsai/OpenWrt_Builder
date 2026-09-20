@@ -3,14 +3,21 @@ name: Build FG-4GT-2SX_V2.0 Firmware
 on:
   workflow_dispatch:
     inputs:
+      ip_address:
+        description: 'Default Management IP'
+        required: true
+        default: '192.168.1.239'
+        type: string
+      gateway:
+        description: 'Default Gateway'
+        required: true
+        default: '192.168.1.1'
+        type: string
       branch:
-        description: 'Branch or tag of RTLPlayground to build'
+        description: 'RTLPlayground branch or tag'
         required: true
         default: 'main'
         type: string
-  push:
-    branches:
-      - main
 
 jobs:
   build:
@@ -20,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout RTLPlayground
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           repository: 'logicog/RTLPlayground'
           ref: ${{ inputs.branch || 'main' }}
@@ -30,6 +37,15 @@ jobs:
           apt update
           apt install make gcc sdcc xxd python-is-python3 libjson-c-dev zlib1g-dev -y
 
+      - name: Customize default network config
+        run: |
+          IP="${{ inputs.ip_address || '192.168.1.239' }}"
+          GW="${{ inputs.gateway || '192.168.1.1' }}"
+          sed -i "s/^ip .*/ip ${IP}/" config.txt
+          sed -i "s/^gw .*/gw ${GW}/" config.txt
+          echo "Updated config.txt:"
+          cat config.txt
+
       - name: Build firmware
         run: make MACHINE="FG_4GT_2SX_V2_0"
 
@@ -37,9 +53,9 @@ jobs:
         run: make -C installer
 
       - name: Upload firmware artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
-          name: RTLPlayground-FG_4GT_2SX_V2_0
+          name: RTLPlayground-FG_4GT_2SX_V2_0-192.168.1.239
           path: |
             output/FG_4GT_2SX_V2_0/*.bin
             installer/output/*.bin
