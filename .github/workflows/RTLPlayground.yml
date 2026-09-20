@@ -1,7 +1,7 @@
 name: Build FG-4GT-2SX_V2.0 Firmware
 
 on:
-  workflow_dispatch: # 支持在 GitHub 页面手动点击运行
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,57 +11,54 @@ jobs:
       - name: Checkout logicog/RTLPlayground
         uses: actions/checkout@v7
         with:
-          repository: 'logicog/RTLPlayground' # 拉取外部目标仓库
-          submodules: 'recursive'            # 递归拉取子模块
+          repository: 'logicog/RTLPlayground'
+          submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Install Build Dependencies & Cross Compiler
+      - name: Install Build Dependencies & SDCC & Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
             gcc-mips-linux-gnu \
             g++-mips-linux-gnu \
+            sdcc \
+            libjson-c-dev \
+            zlib1g-dev \
+            libssl-dev \
             cmake \
             ninja-build \
             python3 \
             python3-pip \
             device-tree-compiler \
             u-boot-tools \
-            libssl-dev \
             pkg-config \
             bison \
             flex \
             bc \
             cpio
 
-      - name: Build FG-4GT-2SX_V2.0
+      - name: Fix include path & Build Firmware
         run: |
-          # 自动探测并执行编译
-          if [ -f "CMakeLists.txt" ]; then
-            cmake -B build -DBOARD=FG-4GT-2SX_V2.0
-            cmake --build build -j$(nproc)
-          elif [ -f "Makefile" ]; then
-            make FG-4GT-2SX_V2.0 -j$(nproc) || make BOARD=FG-4GT-2SX_V2.0 -j$(nproc)
-          elif [ -f "build.sh" ]; then
-            chmod +x build.sh
-            ./build.sh FG-4GT-2SX_V2.0
-          else
-            echo "未找到标准构建入口，请检查仓库构建方式"
-            ls -la
-            exit 1
+          # 建立 json-c 头文件软链接防止老代码引用路径不一致
+          if [ -d "/usr/include/json-c" ] && [ ! -f "/usr/include/json.h" ]; then
+            sudo ln -sf /usr/include/json-c/json.h /usr/include/json.h
+            sudo ln -sf /usr/include/json-c /usr/include/json
           fi
 
-      - name: Collect Firmware Artifacts
-        run: |
-          mkdir -p output
-          # 搜索生成的固件文件（.bin、.img、.rom 等）
-          find . -maxdepth 4 -type f \( -name "*.bin" -o -name "*.img" -o -name "*.rom" \) -not -path "*/.*" -exec cp {} output/ \;
-          echo "=== 收集到的固件文件列表 ==="
-          ls -lh output/
+          # 优先使用 TARGET 参数编译，如果不支持则尝试 BOARD 参数
+          make TARGET=FG-4GT-2SX_V2.0 -j$(nproc) || make BOARD=FG-4GT-2SX_V2.0 -j$(nproc)
 
-      - name: Upload Firmware to GitHub Actions
+      - name: Collect Output Artifacts
+        run: |
+          mkdir -p output_firmware
+          # 搜索生成的固件文件
+          find . -maxdepth 4 -type f \( -name "*.bin" -o -name "*.img" -o -name "*.rom" -o -name "*.trx" \) -not -path "*/.*" -not -path "./output_firmware/*" -exec cp {} output_firmware/ \;
+          echo "=== 编译生成的固件列表 ==="
+          ls -lh output_firmware/
+
+      - name: Upload Firmware Artifacts
         uses: actions/upload-artifact@v7
         with:
           name: FG-4GT-2SX_V2.0-Firmware
-          path: output/*
+          path: output_firmware/*
