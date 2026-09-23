@@ -1,8 +1,16 @@
-name: Build FG-4GT-2SX_V2.0 Firmware
+name: Build RTLPlayfround Firmware
 
 on:
   workflow_dispatch:
     inputs:
+      type:
+        description: 'Machine type'
+        required: true
+        type: choice
+        options:
+          - FG-4GT-2SX_V2.0
+          - PCB_K0402WS_V3
+          - PCB_K0402WS_V2
       ip_address:
         description: 'Default Management IP'
         required: true
@@ -47,7 +55,7 @@ jobs:
           cat config.txt
 
       - name: Build firmware
-        run: make MACHINE="FG_4GT_2SX_V2_0"
+        run: make MACHINE="${{ inputs.type }}"
 
       - name: Build OEM upgrade installer
         run: make -C installer
@@ -55,8 +63,8 @@ jobs:
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: RTLPlayground-FG_4GT_2SX_V2_0-192.168.1.239
+          name: RTLPlayground-"${{ inputs.type }}"
           path: |
-            output/FG_4GT_2SX_V2_0/*.bin
+            output/"${{ inputs.type }}"/*.bin
             installer/output/*.bin
           if-no-files-found: error
