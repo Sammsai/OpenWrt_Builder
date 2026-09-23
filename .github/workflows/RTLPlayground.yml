@@ -63,8 +63,8 @@ jobs:
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: RTLPlayground-"${{ inputs.type }}"
+          name: RTLPlayground-${{ inputs.type }}
           path: |
-            output/"${{ inputs.type }}"/*.bin
+            output/${{ inputs.type }}/*.bin
             installer/output/*.bin
           if-no-files-found: error
