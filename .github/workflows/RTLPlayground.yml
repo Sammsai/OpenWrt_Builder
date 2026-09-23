@@ -13,6 +13,7 @@ on:
           - PCB_K0402WS_V2
           - STEAMEMO_IG204_V1
           - FNS1200P
+          - HY_TFS106
       ip_address:
         description: 'Default Management IP'
         required: true
@@ -39,7 +40,7 @@ jobs:
       - name: Checkout RTLPlayground
         uses: actions/checkout@v7
         with:
-          repository: 'logicog/RTLPlayground'
+          repository: 'Sammsai/RTLPlayground'
           ref: ${{ inputs.branch || 'main' }}
 
       - name: Install build dependencies
