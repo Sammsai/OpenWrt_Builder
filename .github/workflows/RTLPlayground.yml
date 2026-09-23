@@ -11,6 +11,8 @@ on:
           - FG-4GT-2SX_V2.0
           - PCB_K0402WS_V3
           - PCB_K0402WS_V2
+          - STEAMEMO_IG204_V1
+          - FNS1200P
       ip_address:
         description: 'Default Management IP'
         required: true
