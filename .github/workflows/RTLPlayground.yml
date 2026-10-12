@@ -12,7 +12,7 @@ on:
           - PCB_K0402WS_V3
           - PCB_K0402WS_V2
           - STEAMEMO_IG204_V1
-          - FNS1200P
+          - ONT-S207CW-62TS-SE
           - HY_TFS106
       ip_address:
         description: 'Default Management IP'
