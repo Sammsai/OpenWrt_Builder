@@ -12,7 +12,7 @@ on:
           - PCB_K0402WS_V3
           - PCB_K0402WS_V2
           - STEAMEMO_IG204_V1
-          - ONT-S207CW-62TS-SE
+          - ONT_S207CW_62TS_SE
           - HY_TFS106
       ip_address:
         description: 'Default Management IP'
@@ -40,7 +40,7 @@ jobs:
       - name: Checkout RTLPlayground
         uses: actions/checkout@v7
         with:
-          repository: 'Sammsai/RTLPlayground'
+          repository: 'logicog/RTLPlayground'
           ref: ${{ inputs.branch || 'main' }}
 
       - name: Install build dependencies
